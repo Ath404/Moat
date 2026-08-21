@@ -1,0 +1,34 @@
+[package]
+name = "moat"
+version = "0.1.0"
+description = "Moat: a non-custodial Solana vault that enforces policy on trade intents signed inside a TEE."
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "moat"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+# Declared so the cfgs Anchor's macros emit are known values rather than warnings.
+custom-heap = []
+custom-panic = []
+anchor-debug = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = "1.1.2"
+anchor-spl = "1.1.2"
+pyth-solana-receiver-sdk = "2.0.0"
+solana-instructions-sysvar = "3.0"
+moat-core = { path = "../../crates/moat-core" }
+
+[lints.rust]
+# `target_os = "solana"` only exists under cargo-build-sbf; host checks would
+# otherwise warn on every Anchor macro expansion.
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(target_os, values("solana"))'] }

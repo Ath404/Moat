@@ -1,0 +1,21 @@
+[workspace]
+members = ["programs/*"]
+exclude = ["crates/moat-core"]
+resolver = "2"
+
+# `crates/moat-core` is excluded on purpose. It is its own workspace so that
+# `cargo test` inside it runs with no Solana toolchain and no network — the
+# security kernel stays independently verifiable. `programs/moat` still depends
+# on it by path; the exclusion only keeps the two dependency graphs apart.
+
+[profile.release]
+# Non-negotiable for anything holding funds: a wrapping subtraction in release
+# mode is how vaults get drained.
+overflow-checks = true
+lto = "fat"
+codegen-units = 1
+
+[profile.release.build-override]
+opt-level = 3
+incremental = false
+codegen-units = 1

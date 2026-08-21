@@ -1,0 +1,11 @@
+target/
+node_modules/
+test-ledger/
+.anchor/
+dist/
+.env
+*.log
+
+# Never commit an enclave signing key or a decrypted strategy.
+keep/keys/
+*.strategy.json
