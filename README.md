@@ -158,6 +158,8 @@ Nothing in this section requires a wallet, funds, or trusting this repository.
 | Vault PDA | `BwBpUVTbzQCw5Xo7E6LHZTchJTPXcVZTw3KBAGBnXzQx` | [Explorer](https://explorer.solana.com/address/BwBpUVTbzQCw5Xo7E6LHZTchJTPXcVZTw3KBAGBnXzQx?cluster=devnet) — data length is exactly `Vault::LEN` |
 | Owner / guardian | `6frTwSLinb9R3kUFcxuJnkn8VHruRgrqwK4krz3qea1` | bytes 9–41 and 41–73 of the vault account |
 | Registered keep | *none* — `enclave_key` is 32 zero bytes | bytes 73–105. The vault holds funds and **cannot trade** |
+| Deployed bytecode | `23BwTBuQHcPZKM5rDKAJkUx2nNiRBMTUiUoGepct7aHd` | 311,880 bytes, SHA-256 `b45d6ba6…f1669` — **identical to this repo's build** |
+| The vault's only transaction | `FNHfERB1…Cife` | [Explorer](https://explorer.solana.com/tx/FNHfERB1PEBUmiqYmqXaRpLFE93bDANVbVBFHwazyKWokVdLHdcGRwv7x6bzRisWE6PF1G9fnjRWC2MVtLcCife?cluster=devnet) — `Instruction: OpenVault`, slot 490521642 |
 
 ```bash
 # The vault account is exactly Vault::LEN bytes — the same number the frontend's
@@ -169,6 +171,32 @@ curl -s https://api.devnet.solana.com -X POST -H 'content-type: application/json
       print('bytes:', len(base64.b64decode(json.load(sys.stdin)['result']['value']['data'][0])))"
 # → bytes: 878
 ```
+
+### The program running on devnet is the code in this repository
+
+The `ProgramData` account is a 45-byte header followed by the ELF. Strip the header and the
+remaining 311,880 bytes hash to exactly what `cargo-build-sbf` produces from `programs/moat`:
+
+```bash
+cargo-build-sbf --manifest-path programs/moat/Cargo.toml
+
+curl -s https://api.devnet.solana.com -X POST -H 'content-type: application/json'   -d '{"jsonrpc":"2.0","id":1,"method":"getAccountInfo","params":
+      ["23BwTBuQHcPZKM5rDKAJkUx2nNiRBMTUiUoGepct7aHd",{"encoding":"base64"}]}' > pd.json
+
+python - <<'EOF'
+import json, base64, hashlib, pathlib
+raw  = base64.b64decode(json.load(open('pd.json'))['result']['value']['data'][0])
+repo = pathlib.Path('target/deploy/moat.so').read_bytes()
+print('on-chain  ', hashlib.sha256(raw[45:45+len(repo)]).hexdigest())
+print('repo build', hashlib.sha256(repo).hexdigest())
+EOF
+# on-chain   b45d6ba62d1af0eddc2910445d7c6f9cce27d5b14fe6c05dee3b3636cfff1669
+# repo build b45d6ba62d1af0eddc2910445d7c6f9cce27d5b14fe6c05dee3b3636cfff1669
+```
+
+That is a point-in-time fact, not a guarantee: the upgrade authority described in
+[what is not done](#being-straight-about-what-is-not-done) can replace this bytecode at any time.
+Re-run the check rather than trusting the hash printed here.
 
 ### Six refusals, decided by the chain
 
@@ -278,6 +306,11 @@ app/spyglass/           the web app (React + Vite; @solana/web3.js is the only S
   src/views/Desk.tsx      the live desk
   src/components/FloorChart.tsx   price, floor, and the refusal zone
 ```
+
+The web app declares **four runtime dependencies** — `@solana/web3.js`, `buffer`, `react`,
+`react-dom`. No Anchor client, no wallet adapter, no router, no charting library: account reads are
+hand-written byte offsets, instruction data is encoded by hand so the Console can show you the
+bytes before you sign, and the floor chart is a canvas.
 
 `moat-core` is deliberately dependency-free and lives in its own Cargo workspace, so the
 security-critical arithmetic can be tested with a plain `cargo test` — no Solana toolchain, no
