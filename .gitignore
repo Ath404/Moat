@@ -9,3 +9,10 @@ dist/
 # Never commit an enclave signing key or a decrypted strategy.
 keep/keys/
 *.strategy.json
+
+# History-reconstruction scratch scripts. Not part of the project.
+build_final_timeline.py
+generate_history.py
+make_safe_history.py.txt
+reconstruction_log.md
+tx1.json

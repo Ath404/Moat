@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="1200" height="380" role="img" aria-label="Moat — the keep decides, the moat permits">
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#050508"/>
+      <stop offset="55%" stop-color="#0b0b11"/>
+      <stop offset="100%" stop-color="#070709"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.04"/>
+    </linearGradient>
+    <linearGradient id="ribbon2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="filament" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="18%" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="82%" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="hatch" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <line x1="0" y1="0" x2="0" y2="11" stroke="#ff5c42" stroke-opacity="0.28" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="380" fill="url(#ground)"/>
+
+  <!-- the ribbon: price, folding above the line it can never cross -->
+  <path d="M0 168 C 200 96, 380 214, 600 176 S 1000 106, 1200 152 L1200 214 C 1000 176, 800 244, 600 232 S 200 176, 0 232 Z" fill="url(#ribbon)"/>
+  <path d="M0 200 C 240 142, 420 244, 640 206 S 1010 152, 1200 190 L1200 226 C 1010 196, 820 262, 640 250 S 240 200, 0 254 Z" fill="url(#ribbon2)"/>
+  <path d="M0 186 C 220 120, 400 228, 620 190 S 1005 128, 1200 170" fill="none" stroke="url(#filament)" stroke-width="2"/>
+
+  <!-- the floor, and the moat beneath it -->
+  <rect x="0" y="316" width="1200" height="64" fill="url(#hatch)"/>
+  <line x1="0" y1="316" x2="1200" y2="316" stroke="#ff5c42" stroke-width="2"/>
+
+  <!-- wordmark -->
+  <g transform="translate(64 250)">
+    <g stroke="#ff5c42" stroke-width="2.5" stroke-opacity="0.9">
+      <line x1="0" y1="26" x2="26" y2="0"/>
+      <line x1="9" y1="26" x2="35" y2="0"/>
+      <line x1="18" y1="26" x2="44" y2="0"/>
+    </g>
+    <text x="62" y="24" font-family="Archivo, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="1.5" fill="#f7f3ec">MOAT</text>
+  </g>
+
+  <text x="64" y="300" font-family="JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" letter-spacing="2.6" fill="#8b857c">THE KEEP DECIDES &#183; THE MOAT PERMITS</text>
+  <text x="1136" y="352" text-anchor="end" font-family="JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" letter-spacing="2.4" fill="#ff5c42" fill-opacity="0.85">NOTHING LANDS HERE</text>
+</svg>
