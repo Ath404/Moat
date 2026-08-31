@@ -2782,3 +2782,24 @@ a.dchip:hover { border-color: var(--bone-3); color: var(--bone); }
   .ticket { border-left: 0; border-top: 1px solid var(--edge); }
   .desk-meters { border-top: 1px solid var(--edge); }
 }
+
+/* The console's "your vault" line: the address a transaction will actually
+   target, which is never the one in the lookup box. */
+.myvault { margin-top: 0.35rem; }
+.myvault code { font-size: 0.6875rem; color: var(--bone); }
+.sendtarget { margin-top: 0.6rem; text-align: center; }
+.sendtarget code { color: var(--bone); }
+
+.linkish {
+  margin-left: 0.5rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--sand);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.linkish:hover { color: var(--bone); }

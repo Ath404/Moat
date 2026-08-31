@@ -77,21 +77,54 @@ export function ConsoleView() {
   const [sent, setSent] = useState<SendResult | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (account && !vaultAddress && PROGRAM_ID) {
-      try {
-        setVaultAddress(deriveVault(PROGRAM_ID, account).address);
-      } catch { /* leave the field alone */ }
+  /**
+   * The only vault this wallet can act on.
+   *
+   * `open_vault` derives its PDA from the signer (`seeds = [VAULT_SEED,
+   * owner.key()]`), and every other instruction takes its seeds from the
+   * vault's *stored* owner while separately requiring the signer to equal it.
+   * Both roads lead to the same place: for any given wallet there is exactly
+   * one vault the program will accept, and this is it.
+   *
+   * So sending never uses the address in the lookup box. That box exists to
+   * read *anyone's* vault, and pointing a transaction at it is precisely how
+   * you get `ConstraintSeeds` (2006) — the program derives one PDA, the
+   * transaction supplies another, and Anchor prints both.
+   */
+  const myVault = useMemo(() => {
+    if (!account || !PROGRAM_ID) return null;
+    try {
+      return deriveVault(PROGRAM_ID, account).address;
+    } catch {
+      return null;
     }
-  }, [account, vaultAddress]);
+  }, [account]);
+
+  /** Whether that vault has been opened yet. Decides which actions are legal. */
+  const [myVaultExists, setMyVaultExists] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!myVault) {
+      setMyVaultExists(null);
+      return;
+    }
+    let alive = true;
+    setMyVaultExists(null);
+    readVault(myVault, RPC)
+      .then(() => alive && setMyVaultExists(true))
+      .catch(() => alive && setMyVaultExists(false));
+    return () => {
+      alive = false;
+    };
+  }, [myVault]);
 
   async function onSend() {
-    if (!account || !active || !PROGRAM_ID || !encoded.data || !vaultAddress) return;
+    if (!account || !active || !PROGRAM_ID || !encoded.data || !myVault) return;
     setSending(true);
     setSendError(null);
     setSent(null);
     try {
-      const keys = accountsFor(action, { vault: vaultAddress, owner: account, mint });
+      // Always the caller's own PDA — never the browsed address.
+      const keys = accountsFor(action, { vault: myVault, owner: account, mint });
       const result = await sendInstruction({
         endpoint: RPC,
         programId: PROGRAM_ID,
@@ -101,13 +134,30 @@ export function ConsoleView() {
         provider: active.provider as never,
       });
       setSent(result);
-      await onLookup();
+      setMyVaultExists(true);
+      // Point the reader at what we just changed, so the state below updates.
+      setVaultAddress(myVault);
     } catch (e) {
       setSendError(String((e as Error)?.message ?? e));
     } finally {
       setSending(false);
     }
   }
+
+  /**
+   * Why the send button is unavailable, in the program's own terms. Naming the
+   * reason beats a disabled button with no explanation, and both cases below
+   * are ones the chain would otherwise reject after a wallet prompt.
+   */
+  const blocked: string | null = !account
+    ? "Connect a wallet to send"
+    : !PROGRAM_ID || !myVault
+      ? "Program not deployed"
+      : action === "open_vault" && myVaultExists === true
+        ? "This wallet already has a vault"
+        : action !== "open_vault" && myVaultExists === false
+          ? "Open your vault first"
+          : null;
 
   const onLookup = useCallback(async () => {
     setLookupError(null);
@@ -220,10 +270,24 @@ export function ConsoleView() {
             </div>
             {lookupError ? (
               <p className="sub miss">{lookupError}</p>
-            ) : account ? (
-              <p className="sub">Derived from your wallet.</p>
             ) : (
-              <p className="sub">Connect a wallet, or paste an address.</p>
+              <p className="sub">Read any vault. Sending always targets your own.</p>
+            )}
+
+            {account && myVault && (
+              <p className="sub myvault">
+                Your vault <code>{addr(myVault, 4, 4)}</code>
+                {myVaultExists === null
+                  ? " · checking…"
+                  : myVaultExists
+                    ? " · opened"
+                    : " · not opened yet"}
+                {vaultAddress !== myVault && (
+                  <button type="button" className="linkish" onClick={() => setVaultAddress(myVault)}>
+                    read mine
+                  </button>
+                )}
+              </p>
             )}
           </div>
 
@@ -434,20 +498,19 @@ export function ConsoleView() {
 
                 <button
                   type="button"
-                  className={`send ${account && PROGRAM_ID && vaultAddress && !sending ? "live" : ""}`}
-                  disabled={!account || !PROGRAM_ID || !vaultAddress || sending}
+                  className={`send ${!blocked && !sending ? "live" : ""}`}
+                  disabled={!!blocked || sending}
                   onClick={onSend}
                 >
-                  {sending
-                    ? "Simulating, then signing…"
-                    : !account
-                      ? "Connect a wallet to send"
-                      : !PROGRAM_ID
-                        ? "Program not deployed"
-                        : !vaultAddress
-                          ? "Set a vault address"
-                          : `Send ${action}`}
+                  {sending ? "Simulating, then signing…" : (blocked ?? `Send ${action}`)}
                 </button>
+
+                {!blocked && myVault && (
+                  <p className="sub sendtarget">
+                    Signing as <code>{addr(account!, 4, 4)}</code> against your vault{" "}
+                    <code>{addr(myVault, 4, 4)}</code>.
+                  </p>
+                )}
 
                 {sendError && <p className="sub miss sendmsg">{sendError}</p>}
                 {sent && (
