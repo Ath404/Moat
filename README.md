@@ -364,6 +364,11 @@ check, not a settled trade.
 per-fill execution-quality history is sample data, because the vault has no history — the app says
 so in its own footer, and the Console reads the same account directly so you can check.
 
+**The integration tests are a scaffold that has never been run.** `tests/moat.ts` says so in its
+own header. The 39/13/8 counts above are unit tests: the security kernel's arithmetic, the keep's
+signing, and the program's own helpers. Nothing in this repository has ever exercised the program
+against a validator.
+
 **On-chain VRF verification is missing.** `vrf_commitment` is carried and published, but the chain
 does not check that the leg split matches a real VRF output, so unpredictability currently rests
 on the keep's honesty.
