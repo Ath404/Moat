@@ -1,0 +1,16 @@
+# Standalone workspace on purpose: `moat-core` must build and test with a plain
+# `cargo test`, with no Solana toolchain and no network. It is the security
+# kernel of the vault, so it stays dependency-free and independently verifiable.
+[workspace]
+
+[package]
+name = "moat-core"
+version = "0.1.0"
+edition = "2021"
+description = "Policy kernel for the Moat vault: intent encoding, on-chain policy checks, VRF sortie planning."
+license = "MIT"
+
+[dependencies]
+
+[features]
+default = []

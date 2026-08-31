@@ -224,15 +224,23 @@ draws those windows in coral.
 
 ## Run and check locally
 
+All three test suites, run against this commit:
+
+| Suite | Command | Result |
+|---|---|---|
+| Security kernel | `cd crates/moat-core && cargo test` | **39 passed** |
+| Keep (enclave half) | `cd keep && cargo test` | **13 passed** |
+| Program | `cargo test -p moat --lib` | **8 passed** |
+
 ```bash
-# The security kernel — no Solana toolchain, no network, no validator.
-cd crates/moat-core && cargo test
+# The security kernel — no Solana toolchain, no network, no validator, and no
+# minimum Rust version worth mentioning, because it has no dependencies at all.
+cd crates/moat-core && cargo test          # 39 passed
 
-# The enclave half.
-cd keep && cargo test
-
-# The program.
-cargo test -p moat --lib
+# The enclave half, and the program. These pull in the Solana crates, which now
+# need edition2024 — a stock Rust 1.78 will fail to parse base64ct's manifest.
+cd keep && cargo test                      # 13 passed
+cargo test -p moat --lib                   # 8 passed
 
 # The real target. Run this before trusting any change to an Accounts struct:
 # the host check cannot see the 4 KB BPF stack frame.

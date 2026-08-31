@@ -1,0 +1,14 @@
+# Standalone workspace, like moat-core: the keep is off-chain and has no
+# business being resolved against the Solana dependency graph.
+[workspace]
+
+[package]
+name = "keep"
+version = "0.1.0"
+edition = "2021"
+description = "The Moat keep: private strategy evaluation and intent signing, intended to run inside a TEE."
+license = "MIT"
+
+[dependencies]
+moat-core = { path = "../crates/moat-core" }
+ed25519-dalek = "2"
