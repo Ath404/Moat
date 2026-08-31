@@ -297,6 +297,30 @@ budget, not a line of code, and claiming otherwise would be the biggest lie this
 tell. **Until that exists, "the enclave is running the code you think" rests on the owner's
 off-chain check.**
 
+**The program is upgradeable, and the upgrade authority is the vault owner's own key.**
+`23BwTBuQHcPZKM5rDKAJkUx2nNiRBMTUiUoGepct7aHd` carries authority
+`6frTwSLinb9R3kUFcxuJnkn8VHruRgrqwK4krz3qea1` — the same address that owns the vault. Every
+refusal proved above holds for the bytecode deployed at slot `490520058` and no longer. Whoever
+holds that key can upgrade the program and remove any check in it, which means the on-chain
+guarantees are currently *as strong as the owner's key*, not stronger. Freezing the upgrade
+authority is one command and is the right thing to do before this holds real money. It has not
+been done.
+
+```bash
+curl -s https://api.devnet.solana.com -X POST -H 'content-type: application/json'   -d '{"jsonrpc":"2.0","id":1,"method":"getAccountInfo","params":
+      ["23BwTBuQHcPZKM5rDKAJkUx2nNiRBMTUiUoGepct7aHd",{"encoding":"jsonParsed"}]}'   | python -c "import sys,json; print(json.load(sys.stdin)['result']['value']['data']['parsed']['info']['authority'])"
+```
+
+**The allowlisted venue does not exist on the cluster the vault is deployed to.** The mandate
+allowlists Jupiter's aggregator, `JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4` — a mainnet program
+id. On devnet that address is a System-owned account holding zero bytes of data and is not
+executable, so the settlement CPI would fail before it began. This is the concrete reason the
+end-to-end trade path has never run here, and it is why the honest status of Jupiter settlement in
+the table above is *wired, never executed*.
+
+**The vault holds no tokens.** It owns no SPL token account under either the classic Token program
+or Token-2022. Its entire balance is its rent reserve. No deposit has ever been made to it.
+
 **The live vault has never traded, and currently cannot.** Its `enclave_key` is 32 zero bytes, so
 no keep is registered and `execute_sortie` would refuse every intent. `next_nonce` is 0. The
 Jupiter CPI and the on-chain Pyth read compile and are wired, but **no sortie has ever executed on
